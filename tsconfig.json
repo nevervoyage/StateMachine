@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./dist",
+
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+
+    "noImplicitAny": true,
+    "strict": true,
+    "strictNullChecks": true,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+  },
+
+  "include": ["src", "examples"]
+}
