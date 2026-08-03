@@ -1,11 +1,11 @@
-import { StateMachine, State } from "../src/StateMachine";
+import { StateMachine, State } from "..\\src\\StateMachine";
 
 // create "Player" class that extends StateMachine
 class Player extends StateMachine {
     moveSpeed: number;
 
-    constructor() {
-        super();
+    constructor(name?: string) {
+        super(name); // give a name to StateMachine for easier debbuging
 
         this.moveSpeed = 16;
     }
@@ -17,10 +17,10 @@ const idleState: State = {
     actions: [
         { 
             name: "StartRunning", 
-            call: (machine) => {
+            call: (machine, speedIncrease) => { // speedIncrease will be recived from machine.triggerAction(ACTION_NAME, OTHER_ARGS) as OTHER_ARGS
                 const player = machine as Player; // this is neccesearry for TS
                 player.changeState("Running")
-                player.moveSpeed = 20;
+                player.moveSpeed = 16 + speedIncrease;
             } 
         }
     ]
@@ -32,11 +32,33 @@ const runningState: State = {
     actions: [
         { 
             name: "StopRunning", 
-            call: (machine) => {
-                const player = machine as Player; // this is neccesearry for TS
+            call: machine => {
+                const player = machine as Player;
                 player.changeState("Idle")
                 player.moveSpeed = 16;
             } 
+        },
+
+        // when StateMachine changes state to "Running", first action will be always "enter" and will be triggered instantly
+        {
+            name: "enter",
+            call: machine => {
+                const player = machine as Player;
+                console.log(`${player.name} started running`)
+            }
+        },
+
+        // when StateMachine changes state from "Running", "exit" action will be triggered BEFORE changing state to new one
+        //  this can be abused by adding something like machine.triggerAction() and it will fire "Running" action
+        //  you can uncomment last line in call to see what happens
+        {
+            name: "exit",
+            call: machine => {
+                const player = machine as Player;
+                console.log(`${player.name} stopped running`)
+
+                // player.triggerAction("enter") // ExamplePlayer started running
+            }
         }
     ]
 }
@@ -48,14 +70,14 @@ const runningState: State = {
 
 
 // create player and insert created states
-const player = new Player();
+const player = new Player("ExamplePlayer"); // make this StateMachine have this.name = "ExamplePlayer". it useful for debbuging
 player.addState(idleState);
 player.addState(runningState);
 
 // change state to Idle state to access "StartRunning" action
 player.changeState("Idle");
 
-player.triggerAction("StartRunning");
+player.triggerAction("StartRunning", 4); // addind 4 to moveSpeed
 console.log(player.moveSpeed); // 20
 
 player.triggerAction("StopRunning");
